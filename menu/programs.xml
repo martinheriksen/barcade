@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+
+<!-- maximum length of names should be approx 17 characters long. 
+     The application does not crop if it is to long.-->
+<programs>
+  <program>
+    <name>Airwolf</name>
+    <path>/usr/games/xmame</path>
+    <args>xmame -ctrlr xarcade -fullscreen airwolf</args>
+  </program>
+  <program>
+    <name>Buble Boble</name>
+    <path>/usr/games/xmame</path>
+    <args>xmame -ctrlr xarcade -fullscreen bublbobl</args>
+  </program>
+  <program>
+    <name>Contra</name>
+    <path>/usr/games/xmame</path>
+    <args>xmame -ctrlr xarcade -fullscreen contra</args>
+  </program>
+  <program>
+    <name>Ecofighter</name>
+    <path>/usr/games/xmame</path>
+    <args>xmame -ctrlr xarcade -fullscreen ecofghtr</args>
+  </program>
+</programs>
