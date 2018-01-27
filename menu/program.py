@@ -33,7 +33,7 @@ class Program:
     
     def __init__(self, name, path, args, prevProgram, screenshot = None, text=None):
         self.name = name
-        
+        print name  
         font = SysFont("Times New Roman", 30)
         self.nameCurrentSurface = font.render(name, True, (255,255,255))
         self.nameSurface = font.render(name, True, (155,155,155))
@@ -50,8 +50,8 @@ class Program:
             screenshotName = os.path.join("noScreen.png")
             self.screenshot = pygame.image.load(screenshotName)
         else:
-            screenshotName = os.path.join("screenshots", screenshot)
-            self.screenshot = pygame.image.load(screenshotName)
+            # screenshotName = os.path.join("screenshots", screenshot)
+            self.screenshot = pygame.image.load(screenshot)
         
         # prepare the text that describes the game
         if text != None:

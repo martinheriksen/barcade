@@ -14,7 +14,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Barcade.  If not, see <http://www.gnu.org/licenses/>.
 """
-import os, pygame
+import os, pygame, json
 from pygame.locals import *
 
 from background import *
@@ -24,10 +24,16 @@ class MenuList:
     
     
     def draw(self):
+        if self.emptyList == True:
+            return
+
         self.programPointer.drawCurrent()
     
     # Moves the select pointer up the list, and updates the graphics
     def moveUp(self):
+        if self.emptyList == True:
+            return
+
         self.background.repair()
         self.programPointer = self.programPointer.nextProgram
         self.programPointer.drawCurrent()
@@ -35,6 +41,9 @@ class MenuList:
         
     # Moves the select pointer down the list, and updates the graphics
     def moveDown(self):
+        if self.emptyList == True:
+            return
+
         self.background.repair()
         self.programPointer = self.programPointer.prevProgram
         self.programPointer.drawCurrent()
@@ -42,48 +51,54 @@ class MenuList:
         
     # A game is selected, and the respective game is started.
     def select(self):
+        if self.emptyList == True:
+            return
+
         self.programPointer.execute()
         self.background.draw()
         self.programPointer.drawCurrent()
     
     def loadProgramList(self):
-        tempProgramPointer = Program("Airwolf", "/usr/games/xmame", "xmame -ctrlr xarcade -fullscreen airwolf", None, "airwolf.png", "The Airwolf arcade game by \nKyugo Boueki. Fly around \nin your supersonic military \nhelicopter, undertaking \nvarious missions.")
-        firstProgramPointer = tempProgramPointer
-        self.programPointer = tempProgramPointer
-        
-        tempProgramPointer = Program("Altered Beast", "/usr/games/xmame", "xmame -ctrlr xarcade -fullscreen altbeast", self.programPointer, "altbeast.png", "Altered Beast is a platform/\nfighting game that puts the \nplayer in control of a \ncenturion who had died in \nbattle. The centurion has \nbeen raised from the dead to \nrescue Zeus' daughter.")
-        self.programPointer = tempProgramPointer
-        
-        tempProgramPointer = Program("Asterix", "/usr/games/xmame", "xmame -ctrlr xarcade -fullscreen -hs 2 -ws 2 asterix", self.programPointer, "asterix.png", "Asterix is a \nhorizontal-scrolling beat'em \nup arcade game released in \n1992 by Konami.")
-        self.programPointer = tempProgramPointer
-        
-        tempProgramPointer = Program("Bowl-O-Rama", "/usr/games/xmame", "xmame -ctrlr xarcade -fullscreen bowlrama", self.programPointer, "bowlrama.png", "Classic bowling \ncombined with some nice \ntunes.")
-        self.programPointer = tempProgramPointer
-        
-        tempProgramPointer = Program("Bubble Bobble", "/usr/games/xmame", "xmame -ctrlr xarcade -fullscreen -hs 2 -ws 2 bublbobl", self.programPointer, "bublbobl.png", "No introduction should be \nnecessary for this game! \nIf you do not know this game, \nthen please step away from \nthe machine.")
-        self.programPointer = tempProgramPointer
-        
-        tempProgramPointer = Program("Contra", "/usr/games/xmame", "xmame -ctrlr xarcade -fullscreen contra", self.programPointer, "contra.png")
-        self.programPointer = tempProgramPointer
-        
-        tempProgramPointer = Program("Ecofighters", "/usr/games/xmame", "xmame -ctrlr xarcade -fullscreen ecofghtr", self.programPointer, "ecofghtr.png")
-        self.programPointer = tempProgramPointer
-        
-        tempProgramPointer = Program("Golden Axe", "/usr/games/xmame", "xmame -ctrlr xarcade -fullscreen -hs 2 -ws 2 goldnaxe", self.programPointer, "goldnaxe.png")
-        self.programPointer = tempProgramPointer
-        
-        tempProgramPointer = Program("Space Invaders", "/usr/games/xmame", "xmame -ctrlr xarcade -fullscreen -hs 2 -ws 2 invaders", self.programPointer, "invaders.png")
-        self.programPointer = tempProgramPointer
-        
-        tempProgramPointer = Program("Street Fighter", "/usr/games/xmame", "xmame -ctrlr xarcade -fullscreen sf", self.programPointer, "sf.png")
-        self.programPointer = tempProgramPointer
-        
-        tempProgramPointer = Program("Street Fighter II", "/usr/games/xmame", "xmame -ctrlr xarcade -fullscreen sf2", self.programPointer, "sf2.png")
-        self.programPointer = tempProgramPointer
-        
-        self.programPointer = firstProgramPointer
-        self.programPointer.prevProgram = tempProgramPointer
-        tempProgramPointer.nextProgram = firstProgramPointer
+        self.emptyList = True
+        self.programPointer  = None
+
+        # rootdir = '../programs/'
+
+        for subdir, dirs, files in os.walk('../data/programs/'):
+            programFileExists = False
+            screenshotFileExists = False
+
+            for file in files:
+                if file == "readme":
+                    continue
+
+                if file == "program.json":
+                    print os.path.join(subdir, file)
+                    programFile = open(os.path.join(subdir, file))
+                    programData = json.loads(programFile.read())
+
+                    if programData['enabled'] == False:
+                        continue
+
+                    programFileExists = True
+
+                if file == "screenshot.png":
+                    screenshotFilePath = os.path.join(subdir, file)
+                    screenshotFileExists = True
+
+            if programFileExists == True and screenshotFileExists == True:
+                print "Creating entry"
+                tempProgramPointer = Program(programData["title"], programData["emulator"], programData["emulator_argument"], self.programPointer, screenshotFilePath, programData["description"])
+                self.programPointer = tempProgramPointer
+
+                if self.emptyList == True:
+                    firstProgramPointer = tempProgramPointer
+                    self.emptyList = False
+
+        if self.emptyList == False:
+            self.programPointer = firstProgramPointer
+            self.programPointer.prevProgram = tempProgramPointer
+            tempProgramPointer.nextProgram = firstProgramPointer
         
     def __init__(self, background):
         self.background = background

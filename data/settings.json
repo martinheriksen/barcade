@@ -1,0 +1,19 @@
+{
+  "firstRun": true,
+
+  "screensaver": {
+      "timer": 2 
+  },
+
+  "sdlmame": {
+      "enabled": true,
+      "exe_path": "/Users/mhe/Projects/Arcade/mame/mame64",
+      "rom_path": "/Users/mhe/Projects/Arcade/mame/roms"
+      
+  },
+
+  "nes": {
+      "enabled": false,
+      "path": "/foo/bar"
+  }
+}

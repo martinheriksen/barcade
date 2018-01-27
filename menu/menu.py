@@ -14,11 +14,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Barcade.  If not, see <http://www.gnu.org/licenses/>.
 """
-import os, pygame, threading
+import os, pygame, threading, json
 from pygame.locals import *
 
 from background import *
 from menuList import *
+
+# Load settings
+settingsFile = open('../data/settings.json')
+settingsData = json.loads(settingsFile.read())
+
 
 pygame.init()
 
@@ -47,7 +52,7 @@ def blackout():
     background.blackout()
     pygame.display.flip()
 
-t = threading.Timer(5.0, blackout)
+t = threading.Timer(settingsData['screensaver']['timer'], blackout)
 t.start()
 
 comboState = 0
@@ -60,7 +65,7 @@ while True:
         menuList.programPointer.drawCurrent()
         pygame.display.flip()
         background.blackoutBool = False
-    t = threading.Timer(5.0, blackout)
+    t = threading.Timer(settingsData['screensaver']['timer'], blackout)
     t.start()
     
     event = pygame.event.wait()
