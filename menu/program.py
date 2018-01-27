@@ -18,6 +18,8 @@ import sys, os, pygame
 from pygame.locals import *
 from pygame.font import *
 
+from emulator import Emulator
+
 # It also acts as a linked list, wher each element knows of the 
 # previuos and next element in the list. That way is necessary only to
 # hold a reference to the currently selected program, all references
@@ -78,9 +80,11 @@ class Program:
         pygame.display.set_mode((size))
         pygame.display.update()
         
-        os.spawnv(os.P_WAIT, self.path, self.args)
+        # os.spawnv(os.P_WAIT, self.path, self.args)
+        emulator = Emulator.factory(self.path)
+        emulator.execute(self.args)
         
-        pygame.display.set_mode((size),FULLSCREEN)
+        # pygame.display.set_mode((size),FULLSCREEN)
         
         
     def renderText(self, dest):

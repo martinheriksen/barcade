@@ -19,10 +19,12 @@ from pygame.locals import *
 
 from background import *
 from menuList import *
+from emulator import Emulator
 
 # Load settings
 settingsFile = open('../data/settings.json')
 settingsData = json.loads(settingsFile.read())
+Emulator.settings = settingsData
 
 
 pygame.init()
