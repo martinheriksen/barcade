@@ -14,7 +14,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Barcade.  If not, see <http://www.gnu.org/licenses/>.
 """
-import json, os
+import json, os, mimetypes
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import SocketServer
@@ -35,6 +35,7 @@ class HttpHandler(BaseHTTPRequestHandler):
     def _getPrograms(self):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
 
         programs = list()
@@ -50,7 +51,7 @@ class HttpHandler(BaseHTTPRequestHandler):
 
                     programID = subdir.split("/")[3]
                     programData['id'] = programID
-                    programData['screenshot'] = "programs/" + programID + "/screenshot.png"
+                    programData['screenshot'] = "http://127.0.0.1:8081/programs/" + programID + "/screenshot.png"
 
                     programs.append(programData)
 
@@ -85,7 +86,7 @@ class HttpHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/":
             self._setHeadersSuccess()
-            self.wfile.write("<html><body><h1>hi!</h1></body></html>")
+            self.wfile.write(open(os.path.join("../portal/index.html")).read())
             return
         
         tokenPath = self.path.split("/")
@@ -100,15 +101,30 @@ class HttpHandler(BaseHTTPRequestHandler):
             self._getScreenshot(tokenPath[2])
             return
 
+        if tokenPath[1] == "portal":
+            if os.path.isfile("../" + self.path) == False:
+                self._sendNotFound()
+            else:
+                self.send_response(200)
+                mimeType = mimetypes.guess_type("../" + self.path)
+                print mimeType[0]
+                self.send_header('Content-type', mimeType[0])
+                self.end_headers()
+                self.wfile.write(open(os.path.join("../" + self.path)).read())
+
+            return
 
         self._sendNotFound()
         return
 
 
-
-
-
-        
+    def do_OPTIONS(self):
+        self.send_response(200, "ok")
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+        self.send_header("Access-Control-Allow-Headers", "X-Requested-With")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
 
     def do_HEAD(self):
         self._setHeadersSuccess()
