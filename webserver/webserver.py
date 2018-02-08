@@ -32,6 +32,18 @@ class HttpHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write("<html><body><h1>Not found!</h1></body></html>")
 
+    def _sendWrongMediaType(self, expected):
+        self.send_response(415)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        self.wfile.write("<html><body><h1>Wrong Media Type/h1></body></html>")
+
+    def _sendMissingInput(self, missing):
+        self.send_response(400)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        self.wfile.write("<html><body><h1>Missing Input!</h1>Still need: " + missing + "</body></html>")
+
     def _getPrograms(self):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
@@ -81,7 +93,44 @@ class HttpHandler(BaseHTTPRequestHandler):
         f = open('../data/programs/' + programID + "/screenshot.png", 'rb')
         self.wfile.write(f.read())
         f.close()
+
+    def _postProgram(self):
+        if self.headers['Content-Type'][:16] != "application/json":
+            self._sendWrongMediaType("application/json")
+            return
+
         
+        postData = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
+
+        if "title" not in postData:
+            self._sendMissingInput("title")
+            return
+
+        if "description" not in postData:
+            self._sendMissingInput("description")
+            return
+
+
+        if "emulator" not in postData:
+            self._sendMissingInput("emulator")
+            return
+
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+
+        programID = postData['title'].lower().replace(" ", "")
+        print programID
+
+        os.makedirs('../data/programs/' + programID)
+
+        with open("../data/programs/" + programID + "/program.json", 'w+') as outfile:
+            json.dump(postData, outfile)
+
+        postData['id'] = programID
+        self.wfile.write(json.dumps(postData))
+
 
     def do_GET(self):
         if self.path == "/":
@@ -130,10 +179,20 @@ class HttpHandler(BaseHTTPRequestHandler):
         self._setHeadersSuccess()
         
     def do_POST(self):
-        # Doesn't do anything with posted data
-        self._setHeadersSuccess()
-        self.wfile.write("<html><body><h1>POST!</h1></body></html>")
+        print self.path
+        print self.headers
+
+        tokenPath = self.path.split("/")
         
+        if tokenPath[1] == "programs" and len(tokenPath) == 2:
+            self._postProgram()
+            return
+
+        self._sendNotFound()
+        return
+
+
+
 def run(server_class=HTTPServer, handler_class=HttpHandler, port=8081):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
